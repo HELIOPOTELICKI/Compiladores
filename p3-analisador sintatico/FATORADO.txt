@@ -1,0 +1,60 @@
+<programa> ::= id ":" <variaveis> <lista_de_comandos>;
+<variaveis> ::= î | <tipo> <lista_id_var> "." <variaveis>;
+<lista_de_comandos>::= <operacao> <lista_de_comandos_A> | <saida_de_dados> <lista_de_comandos_A> | <selecao> <lista_de_comandos_A> | <repeticao> <lista_de_comandos_A>;
+<lista_de_comandos_A>::= î | <lista_de_comandos>;
+<tipo> ::= <simples> | <array>;
+<array> ::= array "[" <simples> "," c_int "]";
+<lista_id_var>::= id "," <lista_id_var_A>;
+<lista_id_var_A>::= î | <lista_id_var>;
+<simples> ::= c_int | c_float | c_str;
+<operacao> ::= id "=" <operacao_A>;
+<operacao_A> ::= <atribuicao> | <entrada_de_dados>;
+<atribuicao> ::= <atribuicao_A> <expressao>;
+<atribuicao_A> ::= "+=" | "-=";
+<entrada_de_dados> ::= input "(" <entrada_de_dados_A>;
+<entrada_de_dados_A> ::= <entrada_de_dados_com_mensagem> | <entrada_de_dados_sem_mensagem>;
+<entrada_de_dados_com_mensagem> ::= c_str ")" <entrada_de_dados_com_mensagem_A>;
+<entrada_de_dados_com_mensagem_A> ::= î | <tipo> "(" input "(" c_str ")" ")";
+<entrada_de_dados_sem_mensagem> ::= ")" <entrada_de_dados_sem_mensagem_A>;
+<entrada_de_dados_sem_mensagem_A> ::= î | <tipo> input "(" ")";
+<saida_de_dados> ::= print "(" <lista_de_expressoes> ")";
+<lista_de_expressoes> ::= <expressao> <lista_de_expressoes_A>;
+<lista_de_expressoes_A> ::= î | "," <lista_de_expressoes>;
+<selecao> ::= if <expressao> ":" <lista_de_comandos> <selecao_A>;
+<selecao_A> ::= <selecao_simples> | <selecao_senao> | <selecao_composta>;
+<selecao_simples> ::= end;
+<selecao_senao> ::= else ":" <lista_de_comandos> end;
+<selecao_composta> ::= <selecao_alternativa> <selecao_composta_A> ":" <lista_de_comandos> end;
+<selecao_composta_A> ::= end | else;
+<selecao_alternativa> ::= elif <expressao> ":" <lista_de_comandos> <selecao_alternativa_A>;
+<selecao_alternativa_A> ::= î | <selecao_alternativa>;
+<repeticao> ::= <repeticao_while> | for id in <repeticao_A>;
+<repeticao_A> ::= <repeticao_for_range> | <repeticao_for_each>;
+<repeticao_while> ::= while <expressao> ":" <lista_de_comandos> end;
+<repeticao_for_range> ::= range "(" <expressao> ")" ":" <lista_de_comandos> end;
+<repeticao_for_each> ::= id ":" <lista_de_comandos> end;
+<expressao> ::= <elemento> <expressao_>;
+<expressao_> ::= and <elemento> <expressao_> | or <elemento> <expressao_> | î;
+<elemento> ::= <relacional> | true | false | not <elemento>;
+<relacional> ::= <aritmetica> <relacional_A>;
+<relacional_A> ::= <operador_relacional> <aritmetica> | î;
+<operador_relacional> ::= "==" | "!=" | "<" | "<=" | ">" | ">=";
+<aritmetica> ::= <termo> <aritmetica_>;
+<aritmetica_> ::= "+" <termo>  <aritmetica_> | "-" <termo> <aritmetica_> | î;
+<termo> ::= <fator> <termo_>;
+<termo_> ::= "*" <fator> <termo_> | "/" <fator> <termo_> | "//" <fator> <termo_> |  "%" <fator> <termo_> | î;
+<fator>	::= id | c_int | c_float | c_str | "(" <expressao> ")" | "+" <fator> | "-" <fator>;
+
+<lista_de_comandos_A>
+<lista_id_var_A>
+<operacao_A>
+<atribuicao_A>
+<entrada_de_dados_A>
+<entrada_de_dados_com_mensagem_A>
+<entrada_de_dados_sem_mensagem_A>
+<lista_de_expressoes_A>
+<selecao_A>
+<selecao_composta_A>
+<selecao_alternativa_A>
+<repeticao_A>
+<relacional_A>
