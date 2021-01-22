@@ -6,8 +6,8 @@ import React, {
   useState,
 } from 'react'
 import { ipcRenderer } from 'electron'
-import { sprintf } from 'sprintf-js'
 import { readFile, writeFile } from 'fs'
+import { parse, dirname, resolve } from 'path'
 import { Box } from '@chakra-ui/core'
 import { Editor } from './components/Editor/Editor'
 import { StatusBar } from './components/StatusBar/StatusBar'
@@ -46,9 +46,9 @@ const initialState: AppReducerState = {
 
 type Action =
   | {
-    type: 'setOpenFile'
-    payload: { path?: string; content: string }
-  }
+      type: 'setOpenFile'
+      payload: { path?: string; content: string }
+    }
   | { type: 'setEditorContent'; payload: string }
   | { type: 'saveFile' }
 
@@ -93,6 +93,27 @@ export const App = () => {
     cutFromEditor,
   } = useEditor()
   const { messages, reportMessageToTray, clearMessageTray } = useMessageTray()
+
+  const handleSaveClick = () => {
+    if (!hasChanges) return
+
+    if (!currentOpenFilePath) {
+      return ipcRenderer.send('save-file-request')
+    }
+
+    writeFile(currentOpenFilePath, editorContent, (err) => {
+      if (err) {
+        return reportMessageToTray({
+          level: 'error',
+          text: 'Falha em salvar arquivo: ' + err.message,
+        })
+      }
+
+      dispatch({
+        type: 'saveFile',
+      })
+    })
+  }
 
   const handleNewFileRequest = () => {
     dispatch({
@@ -142,30 +163,35 @@ export const App = () => {
   }
 
   const handleBuildTrigger = async () => {
-    if (editorContent.length === 0) {
+    clearMessageTray()
+
+    if (editorContent.replace(/\s|\t|\r?\n/g, '').length === 0) {
       return reportMessageToTray({
-        level: "warning",
+        level: 'warning',
         text: 'Nenhum programa para compilar',
       })
     }
 
     try {
-      const tokens = await new Compiler(editorContent).compile()
-
-      const codeReport = tokens.reduce((message, token) => {
-        const tokenDescription = sprintf("%-7s %-20s %-10s\n", token.getLine(), token.getClasse(), token.getLexeme())
-
-        return message + tokenDescription
-      }, sprintf("%-7s %-20s %-10s\n", "linha", "classe", "lexema"))
-
-      reportMessageToTray({
-        level: 'code',
-        text: codeReport + "\nprograma compilado com sucesso"
+      const nomeArquivo = parse(currentOpenFilePath!).name
+      const codigoObjeto = await new Compiler(
+        editorContent,
+        nomeArquivo
+      ).compile()
+      const pasta = dirname(currentOpenFilePath!)
+      writeFile(resolve(pasta, nomeArquivo + '.il'), codigoObjeto, (err) => {
+        if (err) {
+          throw err
+        }
+        reportMessageToTray({
+          level: 'success',
+          text: 'Programa compilado com sucesso',
+        })
       })
     } catch (error) {
       reportMessageToTray({
         level: 'error',
-        text: error.message
+        text: error.message,
       })
     }
   }
@@ -182,27 +208,6 @@ export const App = () => {
     } else {
       ipcRenderer.send('open-file-request')
     }
-  }
-
-  const handleSaveClick = () => {
-    if (!hasChanges) return
-
-    if (!currentOpenFilePath) {
-      return ipcRenderer.send('save-file-request')
-    }
-
-    writeFile(currentOpenFilePath, editorContent, (err) => {
-      if (err) {
-        return reportMessageToTray({
-          level: 'error',
-          text: 'Falha em salvar arquivo: ' + err.message,
-        })
-      }
-
-      dispatch({
-        type: 'saveFile',
-      })
-    })
   }
 
   useEffect(() => {
@@ -308,7 +313,10 @@ export const App = () => {
           borderBottomColor="gray.600"
           minHeight={70}
         >
-          <ToolBar onClick={handleToolBarClick} />
+          <ToolBar
+            isBuildButtonDisabled={hasChanges || !currentOpenFilePath}
+            onClick={handleToolBarClick}
+          />
         </Box>
         <Box flex={1} display="flex">
           <Editor

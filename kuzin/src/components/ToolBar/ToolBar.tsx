@@ -24,9 +24,10 @@ export type ToolBarAction =
 
 interface ToolBarProps {
   onClick(action: ToolBarAction): void
+  isBuildButtonDisabled: boolean
 }
 
-export const ToolBar = ({ onClick }: ToolBarProps) => {
+export const ToolBar = ({ isBuildButtonDisabled, onClick }: ToolBarProps) => {
   return (
     <Box display="flex">
       <ToolBarButton
@@ -74,6 +75,10 @@ export const ToolBar = ({ onClick }: ToolBarProps) => {
       <ToolBarButton
         shortcut="F9"
         icon={FaWrench}
+        isDisabled={isBuildButtonDisabled}
+        title={
+          isBuildButtonDisabled ? 'Salve o arquivo para compilar' : undefined
+        }
         onClick={() => onClick('build')}
       >
         Compilar

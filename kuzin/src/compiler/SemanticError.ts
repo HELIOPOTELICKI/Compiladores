@@ -1,7 +1,15 @@
-import { AnalysisError } from "./AnalysisError";
+import { AnalysisError } from './AnalysisError'
 
 export class SemanticError extends AnalysisError {
-    constructor(msg: string, position?: number) {
-        super(msg, position);
-    }
+  private msg: string
+  private line: number
+
+  constructor(msg: string, line: number) {
+    super()
+    this.msg = msg
+    this.line = line
+    this.message = this.getMessage()
+  }
+
+  getMessage = () => `Erro na linha ${this.line} - ${this.msg}`
 }

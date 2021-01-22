@@ -1,34 +1,29 @@
 import { Lexical } from './Lexical'
-import { Token } from './Token'
+import { Semantico } from './Semantic'
+import { Stack } from './Stack'
+import { Sintatico } from './Syntactic'
 
 export class Compiler {
-    input: string
+  input: string
+  nome: string
 
-    constructor(input: string) {
-        this.input = input.replace(/\r\n/g, "\n")
-    }
+  constructor(input: string, nome: string) {
+    this.input = input.replace(/\r\n/g, '\n')
+    this.nome = nome
+  }
 
-    compile() {
-        return new Promise<Token[]>((resolve, reject) => {
-            const tokens = []
+  compile() {
+    return new Promise<string>((resolve, reject) => {
+      const pilha = new Stack<number>()
 
-            const lexico = new Lexical(this.input)
-
-            try {
-                let token = lexico.nextToken()
-
-                while (token != null) {
-                    const parcial = this.input.substring(0, token.getPosition())
-                    const linhaAtual = (parcial.length - parcial.replace(/\n/g, "").length) + 1
-                    token.setLine(linhaAtual)
-                    tokens.push(token)
-
-                    token = lexico.nextToken()
-                }
-            } catch (e) {
-                return reject(e);
-            }
-            resolve(tokens)
-        })
-    }
+      const lexico = new Lexical(this.input)
+      const semantico = new Semantico()
+      const sintatico = new Sintatico(pilha, null, null, lexico, semantico)
+      try {
+        resolve(sintatico.parse(this.nome))
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
 }
